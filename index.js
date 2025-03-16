@@ -7,8 +7,13 @@ const mockData = require('./mockData');
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Serve static files from the "public" directory
+app.use(express.static('public'));
+
 // Configurable timer interval (in milliseconds)
-const TIMER_INTERVAL = process.env.TIMER_INTERVAL || 10000;
+const TIMER_INTERVAL_BASE = parseInt(process.env.TIMER_INTERVAL) || 10000;
+const TIMER_INTERVAL_DRIFT = Math.floor(Math.random() * (750 - 250 + 1)) + 250; // artificial drift
+const TIMER_INTERVAL = TIMER_INTERVAL_BASE + (Math.random() < 0.5 ? -TIMER_INTERVAL_DRIFT : TIMER_INTERVAL_DRIFT);
 
 // Function to get a random element from the mockData array
 function getRandomLabel() {

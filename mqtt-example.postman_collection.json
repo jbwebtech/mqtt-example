@@ -1,0 +1,28 @@
+{
+    "info": {
+        "name": "MQTT Example API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Get Stats",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:7979/api/stats",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "7979",
+                    "path": [
+                        "api",
+                        "stats"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ]
+}

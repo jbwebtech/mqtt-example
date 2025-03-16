@@ -199,12 +199,12 @@
                 // Refresh indicator
                 const statsEl = document.getElementById('http-stats-card');
                 statsEl.classList.add('refresh-indicator');
-                setTimeout(() => statsEl.classList.remove('refresh-indicator'), 2000);
+                setTimeout(() => statsEl.classList.remove('refresh-indicator'), 500);
 
                 // Temporarily update the MQTT refresh indicator with the same data from the HTTP poll to validate the UI display.
                 const mqttStatsEl = document.getElementById('mqtt-stats-card');
                 mqttStatsEl.classList.add('refresh-indicator');
-                setTimeout(() => mqttStatsEl.classList.remove('refresh-indicator'), 2000);
+                setTimeout(() => mqttStatsEl.classList.remove('refresh-indicator'), 500);
             } catch (error) {
                 console.error('Error fetching stats:', error);
             }

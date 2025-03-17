@@ -2,7 +2,15 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 7979;
+const mqttPort = process.env.MQTT_PORT || 1883;
 const mockData = require('./mockData');
+const mqtt = require('mqtt');
+
+// MQTT client setup
+const mqttClient = mqtt.connect(`mqtt://localhost:${mqttPort}`);
+mqttClient.on('connect', () => {
+    console.log(`MQTT client connected to broker on port ${mqttPort}`);
+});
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -40,16 +48,27 @@ let statsData = new Stats(
     Math.random() < 0.5 // Random boolean
 );
 
+let previousLastUpdate = statsData.lastUpdate;
+
 // Function to update stats data every TIMER_INTERVAL milliseconds
 async function updateStats() {
     setInterval(() => {
-        statsData = new Stats(
+        const newStatsData = new Stats(
             Math.floor(Math.random() * 100), // Random integer
             getRandomLabel(), // Random string label
             Math.random() * 100, // Random double
             Math.random() < 0.5 // Random boolean
         );
-        console.log('Stats updated:', statsData);
+
+        if (newStatsData.lastUpdate !== previousLastUpdate) {
+            statsData = newStatsData;
+            previousLastUpdate = statsData.lastUpdate;
+            console.log('Stats updated:', statsData);
+
+            // Publish the updated stats to MQTT
+            mqttClient.publish('stats/update', JSON.stringify(statsData));
+            console.log('MQTT message published');
+        }
     }, TIMER_INTERVAL);
 }
 
@@ -63,5 +82,5 @@ app.get('/api/stats', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`HTTP Server is running on http://localhost:${port}`);
 });

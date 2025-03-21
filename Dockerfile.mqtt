@@ -5,4 +5,7 @@ FROM eclipse-mosquitto:latest
 EXPOSE 1883 9001
 
 # Copy the mosquitto configuration file
-COPY mosquitto.conf /mosquitto/config/mosquitto.conf
+COPY ./mosquitto.conf /mosquitto/config/mosquitto.conf
+
+# Command to run the Mosquitto broker
+CMD ["sh", "-c", "mosquitto -c /mosquitto/config/mosquitto.conf"]

@@ -192,15 +192,15 @@
             }
         }
 
-        const mqttClient = mqtt.connect('ws://localhost:9001');
+        const mqttClient = mqtt.connect('ws://127.0.0.1:9001');
 
         mqttClient.on('connect', () => {
-            console.log('Connected to MQTT broker via WebSocket');
-            mqttClient.subscribe('stats/update', (err) => {
-                if (!err) {
-                    console.log('Subscribed to stats/update topic');
-                } else {
+            console.log('Connecting to MQTT broker via WebSocket');
+            mqttClient.subscribe('stats/update', { qos: 0 }, (err, granted) => {
+                if (err) {
                     console.error('Failed to subscribe to stats/update topic:', err);
+                } else {
+                    console.log('Subscribed to stats/update topic');
                 }
             });
         });
@@ -214,33 +214,29 @@
         });
 
         mqttClient.on('message', (topic, message) => {
-            if (topic !== 'stats/update') {
-                console.log(`Received stray message on topic '${topic}'`);
-                return;
-            }
-
             console.log(`Received message on topic '${topic}'`);
+            if (topic === 'stats/update') {
+                const data = JSON.parse(message.toString());
 
-            const data = JSON.parse(message.toString());
+                // Update MQTT progress bar
+                const mqttProgressBar = document.getElementById('mqtt-progress-bar');
+                mqttProgressBar.style.width = `${data.points}%`;
+                mqttProgressBar.setAttribute('aria-valuenow', data.points);
 
-            // Update MQTT progress bar
-            const mqttProgressBar = document.getElementById('mqtt-progress-bar');
-            mqttProgressBar.style.width = `${data.points}%`;
-            mqttProgressBar.setAttribute('aria-valuenow', data.points);
+                // Update MQTT pie chart
+                mqttPercentageChart.data.datasets[0].data = [data.percentage, 100 - data.percentage];
+                mqttPercentageChart.update();
 
-            // Update MQTT pie chart
-            mqttPercentageChart.data.datasets[0].data = [data.percentage, 100 - data.percentage];
-            mqttPercentageChart.update();
+                // Update MQTT text fields
+                document.getElementById('mqtt-label').innerText = `${data.label}`;
+                document.getElementById('mqtt-active').innerHTML = `${data.active ? '✔️' : '❌'}`;
+                document.getElementById('mqtt-last-update').innerText = `Last Update: ${new Date(data.lastUpdate).toLocaleString()}`;
 
-            // Update MQTT text fields
-            document.getElementById('mqtt-label').innerText = `${data.label}`;
-            document.getElementById('mqtt-active').innerHTML = `${data.active ? '✔️' : '❌'}`;
-            document.getElementById('mqtt-last-update').innerText = `Last Update: ${new Date(data.lastUpdate).toLocaleString()}`;
-
-            // Refresh indicator for MQTT
-            const mqttStatsEl = document.getElementById('mqtt-stats-card');
-            mqttStatsEl.classList.add('refresh-indicator');
-            setTimeout(() => mqttStatsEl.classList.remove('refresh-indicator'), 500);
+                // Refresh indicator for MQTT
+                const mqttStatsEl = document.getElementById('mqtt-stats-card');
+                mqttStatsEl.classList.add('refresh-indicator');
+                setTimeout(() => mqttStatsEl.classList.remove('refresh-indicator'), 500);
+            }
         });
 
         setInterval(fetchHttpStats, 4000);
